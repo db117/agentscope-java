@@ -20,9 +20,7 @@ import io.agentscope.core.agent.RuntimeContext;
 import io.agentscope.core.event.TextBlockDeltaEvent;
 import io.agentscope.core.message.UserMessage;
 import io.agentscope.core.state.JsonFileAgentStateStore;
-import io.agentscope.extensions.model.dashscope.DashScopeChatModel;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import io.agentscope.extensions.model.openai.OpenAIChatModel;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -32,6 +30,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * StreamingWebExample - Spring Boot + SSE streaming agent responses.
@@ -70,11 +71,11 @@ public class StreamingWebExample {
 
         @Override
         public void afterPropertiesSet() {
-            String apiKey = System.getenv("DASHSCOPE_API_KEY");
-            if (apiKey == null || apiKey.isEmpty()) {
-                throw new IllegalStateException(
-                        "DASHSCOPE_API_KEY environment variable is required");
-            }
+//            String apiKey = System.getenv("DASHSCOPE_API_KEY");
+//            if (apiKey == null || apiKey.isEmpty()) {
+//                throw new IllegalStateException(
+//                        "DASHSCOPE_API_KEY environment variable is required");
+//            }
 
             Path sessionPath =
                     Paths.get(
@@ -86,12 +87,12 @@ public class StreamingWebExample {
             agentBuilder =
                     ReActAgent.builder()
                             .name("WebAgent")
-                            .model(
-                                    DashScopeChatModel.builder()
-                                            .apiKey(apiKey)
-                                            .modelName("qwen-plus")
-                                            .stream(true)
-                                            .build())
+                            .model(OpenAIChatModel.builder()
+                                    .baseUrl("http://127.0.0.1:3425/v1")
+                                    .apiKey("magpie")
+                                    .modelName("auto-local/glm-5.3")
+                                    .stream(true)
+                                    .build())
                             .stateStore(new JsonFileAgentStateStore(sessionPath));
 
             System.out.println("\n=== StreamingWeb Example Started ===");
@@ -100,7 +101,7 @@ public class StreamingWebExample {
             System.out.println("  curl -N \"http://localhost:8080/chat?message=Hello\"");
             System.out.println(
                     "  curl -N"
-                        + " \"http://localhost:8080/chat?message=What+is+AI&sessionId=my-session\"");
+                            + " \"http://localhost:8080/chat?message=What+is+AI&sessionId=my-session\"");
             System.out.println("\nPress Ctrl+C to stop.\n");
         }
 
